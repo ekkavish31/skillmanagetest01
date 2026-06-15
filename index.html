@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>QAD Skill Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=IBM+Plex+Sans+JP:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+<div id="root"></div>
+
+<!-- ===== SharePoint / MSAL config ===== -->
+<script>
+  // ลิงก์ไฟล์ Excel บน SharePoint (เปลี่ยนตรงนี้ถ้าย้ายไฟล์)
+  window.SP_FILE_URL = "https://ehth.sharepoint.com/:x:/s/Interpreter/IQA-_bul43PUSYT_GKmEQvDXAdy8naQZYrGiYIl-bP2r0sE?e=yTzASJ";
+  // สร้าง msalInstance หลัง library โหลดเสร็จ (MSAL v3 ต้อง await initialize() ก่อนใช้)
+  window.msalReady = null;   // Promise ที่ resolve เมื่อ init เสร็จ
+  window.initMsal = function(){
+    if(window.msalReady) return window.msalReady;
+    if(typeof msal === "undefined"){ console.error("MSAL library ยังไม่โหลด"); return null; }
+    var inst = new msal.PublicClientApplication({
+      auth: {
+        clientId: "8958a680-e0dd-44fb-8e03-8dd22ce9ca5c",
+        authority: "https://login.microsoftonline.com/11a557d2-03b9-4a8b-8d52-aaef38d6c15b",
+        redirectUri: window.location.origin + window.location.pathname
+      },
+      cache: { cacheLocation: "localStorage" }
+    });
+    window.msalReady = inst.initialize().then(function(){
+      window.msalInstance = inst;
+      return inst.handleRedirectPromise();
+    }).catch(function(e){ console.error("MSAL init error", e); throw e; });
+    return window.msalReady;
+  };
+  // โหลด MSAL: ใช้ไฟล์ในแอปก่อน (same-origin กัน Tracking Prevention) ถ้าพังค่อยลอง CDN
+  window.__loadMsal = function(){
+    var local = document.createElement("script");
+    local.src = "vendor/msal-browser.min.js";
+    local.onload = window.initMsal;
+    local.onerror = function(){
+      var s = document.createElement("script");
+      s.src = "https://alcdn.msauth.net/browser/2.39.0/js/msal-browser.min.js";
+      s.onload = window.initMsal;
+      s.onerror = function(){
+        var s2 = document.createElement("script");
+        s2.src = "https://cdn.jsdelivr.net/npm/@azure/msal-browser@3.27.0/dist/msal-browser.min.js";
+        s2.onload = window.initMsal;
+        s2.onerror = function(){ console.error("โหลด MSAL ไม่สำเร็จทุก source"); };
+        document.head.appendChild(s2);
+      };
+      document.head.appendChild(s);
+    };
+    document.head.appendChild(local);
+  };
+  window.__loadMsal();
+</script>
+
+
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="js/bootstrap.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="js/db.js"></script>
+<script type="text/babel" src="js/lib.jsx"></script>
+<script type="text/babel" src="js/views1.jsx"></script>
+<script type="text/babel" src="js/views2.jsx"></script>
+<script type="text/babel" src="js/views3.jsx"></script>
+<script type="text/babel" src="js/forms.jsx"></script>
+<script type="text/babel" src="js/forms2.jsx"></script>
+<script type="text/babel" src="js/app.jsx"></script>
+</body>
+</html>
